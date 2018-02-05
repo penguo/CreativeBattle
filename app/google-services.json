@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "136768590418",
+    "firebase_url": "https://creativebattle-81a5e.firebaseio.com",
+    "project_id": "creativebattle-81a5e",
+    "storage_bucket": "creativebattle-81a5e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136768590418:android:2050b095609acd6f",
+        "android_client_info": {
+          "package_name": "com.afordev.creativebattle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "136768590418-cf3drhhehg1sce58h5tmic4r2sf1vk4l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABH2k0m7wR6YDZ6T0UHU-YOwru1srA5xU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
