@@ -7,15 +7,23 @@ import android.os.Parcelable;
  * Created by penguo on 2018-02-03.
  */
 
-public class UserData implements Parcelable{
-    private int userNo;
-    private String name;
-    private int exp;
+public class UserData implements Parcelable {
+    protected int userNo;
+    protected String name;
+    protected int exp;
 
-    public UserData(int userNo, String name, int exp){
+    public UserData(int userNo, String name, int exp) {
         this.userNo = userNo;
         this.name = name;
         this.exp = exp;
+    }
+
+    public UserData(UserData user) {
+        if (user != null) {
+            this.userNo = user.getUserNo();
+            this.name = user.getName();
+            this.exp = user.getExp();
+        }
     }
 
     protected UserData(Parcel in) {

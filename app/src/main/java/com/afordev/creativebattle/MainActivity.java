@@ -11,16 +11,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.afordev.creativebattle.Data.Card;
 import com.afordev.creativebattle.Data.UserData;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
 
-    private static String APPVERSION = "develop 0.2.180204_07";
+    private static String APPVERSION = "develop 0.2.180206_04";
 
     private TextView tvVersion;
     private EditText etName, etServer;

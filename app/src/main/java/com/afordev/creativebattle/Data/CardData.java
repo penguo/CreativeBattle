@@ -1,19 +1,16 @@
 package com.afordev.creativebattle.Data;
 
-import java.util.ArrayList;
-
 /**
  * Created by penguo on 2018-02-01.
  */
 
-public class Card {
-    private String name, explain;
-    private int cost;
-    private int hp, atk;
-    private int stamina;
-    private int special1, special2;
+public class CardData {
+    protected String prefix, name, explain;
+    protected int cost, hp, atk, stamina;
+    protected String special1, special2;
 
-    public Card(String name, String explain, int cost, int hp, int atk, int special1, int special2) {
+    public CardData(String prefix, String name, String explain, int cost, int hp, int atk, String special1, String special2) {
+        this.prefix = prefix;
         this.name = name;
         this.explain = explain;
         this.cost = cost;
@@ -21,6 +18,23 @@ public class Card {
         this.atk = atk;
         this.special1 = special1;
         this.special2 = special2;
+    }
+
+    public CardData(CardData card) {
+        if (card != null) {
+            this.prefix = card.getPrefix();
+            this.name = card.getName();
+            this.explain = card.getExplain();
+            this.cost = card.getCost();
+            this.hp = card.getHp();
+            this.atk = card.getAtk();
+            this.special1 = card.getSpecial1();
+            this.special2 = card.getSpecial2();
+        }
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public void setName(String name) {
@@ -43,16 +57,20 @@ public class Card {
         this.stamina = stamina;
     }
 
-    public void setSpecial1(int special1) {
+    public void setSpecial1(String special1) {
         this.special1 = special1;
     }
 
-    public void setSpecial2(int special2) {
+    public void setSpecial2(String special2) {
         this.special2 = special2;
     }
 
     public void setExplain(String explain) {
         this.explain = explain;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public String getName() {
@@ -75,11 +93,11 @@ public class Card {
         return stamina;
     }
 
-    public int getSpecial1() {
+    public String getSpecial1() {
         return special1;
     }
 
-    public int getSpecial2() {
+    public String getSpecial2() {
         return special2;
     }
 
@@ -96,7 +114,7 @@ public class Card {
         sb.append(hp + ",");
         sb.append(atk + ",");
         sb.append(special1 + ",");
-        sb.append(special2+"");
+        sb.append(special2 + "");
         return sb.toString();
     }
 }
