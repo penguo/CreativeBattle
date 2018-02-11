@@ -12,12 +12,13 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.afordev.creativebattle.Data.UserData;
+import com.afordev.creativebattle.Manager.ItemAct;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String APPVERSION = "develop 0.2.180206_04";
+    private static String APPVERSION = "develop 0.2.180206_14";
 
     private TextView tvVersion;
     private EditText etName, etServer;
@@ -26,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private ToggleButton toggleBtnSide;
     private FirebaseDatabase mFirebase = FirebaseDatabase.getInstance();
     private DatabaseReference mDatabase = mFirebase.getReference();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
                         side = "red";
                     }else{
                         side = "blue";
+                    }
+                    if(etServer.getText().toString().equals("")){
+                        throw new Exception();
                     }
                     user = new UserData(1, etName.getText().toString(), 0);
                     Intent intent = new Intent(MainActivity.this, GameActivity.class);

@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.afordev.creativebattle.Data.CardData;
 import com.afordev.creativebattle.Data.ChatData;
+import com.afordev.creativebattle.Data.ChoiceData;
 import com.afordev.creativebattle.Data.CommandData;
 import com.afordev.creativebattle.Data.UserData;
 import com.afordev.creativebattle.Manager.GameSystem;
@@ -30,7 +31,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     private FirebaseDatabase mFirebase = FirebaseDatabase.getInstance();
     private DatabaseReference mDatabase = mFirebase.getReference();
-    private GameSystem mGameSystem;
+    public GameSystem mGameSystem;
 
     private View gameUi;
 
@@ -52,7 +53,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     private Button btnEndTurn, btnChat;
 
-    private String serverName, mySide;
+    private String serverName, mySide, opponentSide;
     private UserData user;
 
     @Override
@@ -80,19 +81,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         layoutPhase2 = findViewById(R.id.game_layout_phase2);
         tvPhase0 = findViewById(R.id.game_tv_phase0);
 
-        opponentCard0 = new ItemCard(gameUi.findViewById(R.id.game_card_opponent_0), null);
-        opponentCard1 = new ItemCard(gameUi.findViewById(R.id.game_card_opponent_1), null);
-        opponentCard2 = new ItemCard(gameUi.findViewById(R.id.game_card_opponent_2), null);
-        myCard0 = new ItemCard(gameUi.findViewById(R.id.game_card_my_0), null);
-        myCard1 = new ItemCard(gameUi.findViewById(R.id.game_card_my_1), null);
-        myCard2 = new ItemCard(gameUi.findViewById(R.id.game_card_my_2), null);
-        myHand0 = new ItemCard(gameUi.findViewById(R.id.game_card_my_hand_0), null);
-        myHand1 = new ItemCard(gameUi.findViewById(R.id.game_card_my_hand_1), null);
-        myHand2 = new ItemCard(gameUi.findViewById(R.id.game_card_my_hand_2), null);
-        choice0 = new ItemChoice(gameUi.findViewById(R.id.game_choice_0), null);
-        choice1 = new ItemChoice(gameUi.findViewById(R.id.game_choice_1), null);
-        choice2 = new ItemChoice(gameUi.findViewById(R.id.game_choice_2), null);
-
         btnEndTurn = gameUi.findViewById(R.id.game_btn_endturn);
         btnChat = gameUi.findViewById(R.id.game_btn_chat);
 
@@ -119,29 +107,49 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setReady() {
         user = getIntent().getParcelableExtra("user");
-        player = new ItemPlayer(findViewById(R.id.game_player), user);
-        opponent = new ItemPlayer(findViewById(R.id.game_player_opponent), null);
+        player = new ItemPlayer(mGameSystem, findViewById(R.id.game_player), user);
+        opponent = new ItemPlayer(mGameSystem, findViewById(R.id.game_player_opponent), null);
         mySide = getIntent().getStringExtra("side");
         serverName = getIntent().getStringExtra("serverName");
         logs = new StringBuffer();
         tvChat.setText(logs.toString());
         setLayoutChat(false);
         mGameSystem = new GameSystem(this, serverName, mySide, tvLog);
-        firebaseSet();
-        insertCommand("/connect " + mySide + " " + user.toString());
+        opponentCard0 = new ItemCard(this, gameUi.findViewById(R.id.game_card_opponent_0), null, mySide);
+        opponentCard1 = new ItemCard(this, gameUi.findViewById(R.id.game_card_opponent_1), null, mySide);
+        opponentCard2 = new ItemCard(this, gameUi.findViewById(R.id.game_card_opponent_2), null, mySide);
+        myCard0 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_0), null, mySide);
+        myCard1 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_1), null, mySide);
+        myCard2 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_2), null, mySide);
+        myHand0 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_hand_0), null, mySide);
+        myHand1 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_hand_1), null, mySide);
+        myHand2 = new ItemCard(this, gameUi.findViewById(R.id.game_card_my_hand_2), null, mySide);
+        choice0 = new ItemChoice(this, gameUi.findViewById(R.id.game_choice_0), null, mySide);
+        choice1 = new ItemChoice(this, gameUi.findViewById(R.id.game_choice_1), null, mySide);
+        choice2 = new ItemChoice(this, gameUi.findViewById(R.id.game_choice_2), null, mySide);
 
+        firebaseSet();
+        mGameSystem.insertCommand("/connect " + mySide + " " + user.toString());
+        if (mySide.equals("red")) {
+            opponentSide = "blue";
+        } else {
+            opponentSide = "red";
+        }
         layoutPhase0.setVisibility(View.VISIBLE);
         layoutPhase1.setVisibility(View.GONE);
         layoutPhase2.setVisibility(View.GONE);
         btnEndTurn.setVisibility(View.GONE);
         tvPhase0.setText("Wait Other Player...");
+        btnEndTurn.setOnClickListener(this);
     }
 
     public void setStartGame() {
-
+        if (mySide.equals("red")) {
+            mGameSystem.insertCommand("/game proceed red phase1");
+        }
     }
 
-    public void phase0(){
+    public void phase0() {
         tvPhase0.setText("Opponent's Turn.");
         layoutPhase0.setVisibility(View.VISIBLE);
         layoutPhase1.setVisibility(View.GONE);
@@ -149,25 +157,46 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         btnEndTurn.setVisibility(View.GONE);
     }
 
-    public void phase1(){
+    public void phase1() {
         layoutPhase0.setVisibility(View.GONE);
         layoutPhase1.setVisibility(View.VISIBLE);
         layoutPhase2.setVisibility(View.GONE);
         btnEndTurn.setVisibility(View.GONE);
+        player.addTurn();
+        choice0.setChoice(new ChoiceData("3장 뽑기", "랜덤 카드팩에서 3장을 뽑습니다.", "card", "+3", "/drawcard " + mySide + " 3"));
+        choice0.setReady();
     }
 
-    public void phase2(){
+    public void phase2() {
         layoutPhase0.setVisibility(View.GONE);
         layoutPhase1.setVisibility(View.GONE);
         layoutPhase2.setVisibility(View.VISIBLE);
         btnEndTurn.setVisibility(View.VISIBLE);
+
+        myHand0.setCard(new CardData("전설의", "투명 드래곤", "드래곤중에서도 최강의 투명드래곤이 울부짓었따\n" +
+                "투명드래곤은 졸라짱쎄서 드래곤중에서 최강이엇따", 10, 50, 50, "", ""));
+        myHand1.setCard(new CardData("맷집좋은", "아이언 골렘", "골렘골렘!!", 2, 100, 5, "", ""));
+        myHand2.setCard(new CardData("카카오", "라이언", "라이언도 사자다!", 1, 3, 20, "", ""));
+    }
+
+    public void phase2CheckClick() {
+        myHand0.onRefresh();
+        myHand1.onRefresh();
+        myHand2.onRefresh();
+        myCard0.onRefresh();
+        myCard1.onRefresh();
+        myCard2.onRefresh();
+        opponentCard0.onRefresh();
+        opponentCard1.onRefresh();
+        opponentCard2.onRefresh();
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case (R.id.game_btn_chat_send):
-                if (etChat.getText().toString().charAt(0) == '/') {
+                if (etChat.getText().toString().equals("")) {
+                } else if (etChat.getText().toString().charAt(0) == '/') {
                     CommandData commandData = new CommandData(etChat.getText().toString());
                     mDatabase.child("game").child(serverName).child("command").push().setValue(commandData);
                 } else {
@@ -188,12 +217,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             case (R.id.game_btn_log_close):
                 setLayoutLog(false);
                 break;
+            case (R.id.game_btn_endturn):
+                mGameSystem.insertCommand("/endturn " + mySide);
+                break;
         }
-    }
-
-    public void insertCommand(String command) {
-        CommandData commandData = new CommandData(command);
-        mDatabase.child("game").child(serverName).child("command").push().setValue(commandData);
     }
 
     public void setLayoutChat(boolean isView) {

@@ -11,19 +11,19 @@ import com.afordev.creativebattle.R;
  */
 
 public class ItemPlayer extends UserData {
+    private GameSystem mGameSystem;
     private int hp, cost, costMax;
     private TextView tvName, tvHp, tvCost;
 
-    public ItemPlayer(View view, UserData user) {
+    public ItemPlayer(GameSystem mGameSystem, View view, UserData user) {
         super(user);
+        this.mGameSystem = mGameSystem;
         tvName = view.findViewById(R.id.item_player_tv_name);
         tvHp = view.findViewById(R.id.item_player_tv_hp);
         tvCost = view.findViewById(R.id.item_player_tv_cost);
-
         hp = 40;
         cost = 0;
         costMax = 0;
-
         if (user != null) {
             tvName.setText(name);
             tvHp.setText(hp + "");
@@ -33,6 +33,11 @@ public class ItemPlayer extends UserData {
             tvHp.setText(0+"");
             tvCost.setText(0+"");
         }
+    }
+
+    public void addTurn(){
+        costMax++;
+        setCost(costMax);
     }
 
     public void setHp(int hp) {

@@ -8,14 +8,15 @@ import com.afordev.creativebattle.R;
 
 public class ChoiceData {
     protected String name, explain, summary;
-    protected String type;
+    protected String type, command;
     protected int typeResId;
 
-    public ChoiceData(String name, String explain, String type, String summary) {
+    public ChoiceData(String name, String explain, String type, String summary, String command) {
         this.name = name;
         this.explain = explain;
         setType(type);
         this.summary = summary;
+        this.command = command;
     }
 
     public ChoiceData(ChoiceData choice) {
@@ -50,6 +51,10 @@ public class ChoiceData {
         this.summary = summary;
     }
 
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
     public String getName() {
         return name;
     }
@@ -70,11 +75,18 @@ public class ChoiceData {
         return summary;
     }
 
+    public String getCommand() {
+        return command;
+    }
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-//        sb.append()
-
+        sb.append(name+",");
+        sb.append(explain+",");
+        sb.append(type+",");
+        sb.append(summary+",");
+        sb.append(command.replace(" ","_"));
         return sb.toString();
     }
 }

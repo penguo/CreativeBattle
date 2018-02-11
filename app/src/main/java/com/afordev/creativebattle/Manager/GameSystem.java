@@ -3,9 +3,11 @@ package com.afordev.creativebattle.Manager;
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afordev.creativebattle.Data.CardData;
 import com.afordev.creativebattle.Data.ChoiceData;
+import com.afordev.creativebattle.Data.CommandData;
 import com.afordev.creativebattle.Data.UserData;
 import com.afordev.creativebattle.GameActivity;
 import com.google.firebase.database.DatabaseReference;
@@ -27,7 +29,7 @@ public class GameSystem {
     private TextView tvLog;
     private StringBuffer logs;
     private Context mContext;
-    private String server, mySide;
+    private String serverName, mySide, opponentSide;
     private Random random = new Random();
 
     private int myHp, opponentHp;
@@ -35,9 +37,9 @@ public class GameSystem {
 
     private UserData userRed, userBlue;
 
-    public GameSystem(Context mContext, String server, String side, TextView tvLog) {
+    public GameSystem(Context mContext, String serverName, String side, TextView tvLog) {
         this.mContext = mContext;
-        this.server = server;
+        this.serverName = serverName;
         this.mySide = side;
         this.tvLog = tvLog;
         logs = new StringBuffer();
@@ -45,6 +47,11 @@ public class GameSystem {
             addErrorLog("Fatal error! Your side is wrong.", null);
         } else {
             addLog("New game start!");
+        }
+        if (mySide.equals("red")) {
+            opponentSide = "blue";
+        } else {
+            opponentSide = "red";
         }
         myDeck = new ArrayList<>();
         myDeck.add(new CardData("", "Dummy1", "Dummy Data." + mySide, 1, 2, 3, "", ""));
@@ -55,6 +62,11 @@ public class GameSystem {
         myDeck.add(new CardData("", "Dummy6", "Dummy Data." + mySide, 1, 5, 6, "", ""));
         userRed = new UserData(-1, "", 0);
         userBlue = new UserData(-1, "", 0);
+    }
+
+    public void insertCommand(String command) {
+        CommandData commandData = new CommandData(command);
+        mDatabase.child("game").child(serverName).child("command").push().setValue(commandData);
     }
 
     public boolean execCommand(String command) {
@@ -92,6 +104,9 @@ public class GameSystem {
                             default:
                                 addErrorLog(command, "strings[2] is wrong command.");
                                 return false;
+                        }
+                        if (itemCard == null) {
+                            addErrorLog(command, "Position's item is null.");
                         }
                         switch (strings[4]) {
                             case ("set"):
@@ -243,19 +258,25 @@ public class GameSystem {
                                 addErrorLog(command, "position must be 0~2.");
                                 return false;
                             }
-                        } catch (NumberFormatException e) {
+                        } catch (Exception e) {
                             addErrorLog(command, "casting strings[2] to Integer.");
                             return false;
                         }
                         itemChoice = ((GameActivity) mContext).getChoice(position);
+                        if (itemChoice == null) {
+                            addErrorLog(command, "Position's Item is null.");
+                            return false;
+                        }
                         switch (strings[3]) {
                             case ("set"):
                                 switch (strings[4]) {
                                     case ("choice"):
                                         st = strings[5].split(",");
-                                        itemChoice.setChoice(new ChoiceData(st[0], st[1], st[2], st[3]));
+                                        itemChoice.setChoice(new ChoiceData(st[0], st[1], st[2], st[3], st[4].replace("_", " ")));
                                         return true;
                                     case ("command"):
+                                        itemChoice.setCommand(strings[5].replace("_", " "));
+                                        return true;
                                 }
                             default:
                                 addErrorLog(command, "strings[3] is wrong command.");
@@ -276,29 +297,45 @@ public class GameSystem {
                         return false;
                 }
             case ("/endturn"):
-                return false;
+                switch (strings[1]) {
+                    case ("red"):
+                        if (mySide.equals("red")) {
+                            insertCommand("/game proceed blue phase1");
+                        }
+                        return true;
+                    case ("blue"):
+                        if (mySide.equals("red")) {
+                            insertCommand("/game proceed red phase1");
+                        }
+                        return true;
+                    default:
+                        addErrorLog(command, "strings[1] is wrong command.");
+                        return false;
+                }
             case ("/game"):
                 switch (strings[1]) {
                     case ("start"):
                         if (userRed.getUserNo() != -1 && userBlue.getUserNo() != -1) {
                             ((GameActivity) mContext).setStartGame();
+                            addLog("Game start!");
                             return true;
                         } else {
                             addErrorLog(command, "Need 2 Player.");
                             return false;
                         }
                     case ("clear"):
-                        mDatabase.child("game").child(server).setValue(null);
-                        addLog(server + " server's game is cleared.");
-                        addLog("Please rejoin server.");
+                        mDatabase.child("game").child(serverName).setValue(null);
+                        addLog(serverName + " serverName's game is cleared.");
+                        addLog("Please rejoin serverName.");
                         return true;
                     case ("proceed"):
-                        // TODO proceed phase
                         if (mySide.equals(strings[2])) {
                             switch (strings[3]) {
                                 case ("phase1"):
+                                    ((GameActivity) mContext).phase1();
                                     return true;
                                 case ("phase2"):
+                                    ((GameActivity) mContext).phase2();
                                     return true;
                                 default: {
                                     addErrorLog(command, "strings[3] is wrong command.");
@@ -306,6 +343,7 @@ public class GameSystem {
                                 }
                             }
                         } else {
+                            ((GameActivity) mContext).phase0();
                             return true;
                         }
                     default: {
@@ -322,7 +360,9 @@ public class GameSystem {
                                 userRed = new UserData(Integer.parseInt(st[0]), st[1], Integer.parseInt(st[2]));
                                 if (userBlue.getUserNo() != -1) {
                                     addLog("Red and Blue is ready.");
-                                    ((GameActivity) mContext).insertCommand("/game start");
+                                    if (mySide.equals("red")) {
+                                        insertCommand("/game start");
+                                    }
                                 } else {
                                     addLog("Wait other player...");
                                 }
@@ -341,7 +381,7 @@ public class GameSystem {
                                 userBlue = new UserData(Integer.parseInt(st[0]), st[1], Integer.parseInt(st[2]));
                                 if (userRed.getUserNo() != -1) {
                                     addLog("Red and Blue is ready.");
-                                    ((GameActivity) mContext).insertCommand("/game start");
+                                    insertCommand("/game start");
                                 } else {
                                     addLog("Wait other player...");
                                 }
@@ -379,6 +419,7 @@ public class GameSystem {
         logs.append("\n");
         logs.append("execCommand Error: " + st);
         Log.e("GameSystem execCommand", st);
+        Toast.makeText(mContext, "An error occurred.", Toast.LENGTH_SHORT).show();
         tvLog.setText(logs.toString());
     }
 
