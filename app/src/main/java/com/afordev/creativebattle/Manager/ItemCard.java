@@ -6,6 +6,7 @@ import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afordev.creativebattle.Data.CardData;
 import com.afordev.creativebattle.GameActivity;
@@ -92,6 +93,8 @@ public class ItemCard extends CardData {
     }
 
     public void onRefresh() {
+        setItemAct(0);
+        stamina = 1;
         if (stamina > 0) {
             layout.setEnabled(true);
         } else {
@@ -101,6 +104,30 @@ public class ItemCard extends CardData {
             layoutAct.setVisibility(View.VISIBLE);
         } else {
             layoutAct.setVisibility(View.GONE);
+        }
+    }
+
+    public void setItemAct(int type){
+        switch(type){
+            case(0): // hand
+                itemAct0.setIcon(R.drawable.ic_summon);
+                itemAct0.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(mContext, "소환", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                itemAct2.setIcon(R.drawable.ic_zoomin);
+                itemAct2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(mContext, "상세 정보", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                break;
+            case(1): // field
+                break;
+
         }
     }
 
