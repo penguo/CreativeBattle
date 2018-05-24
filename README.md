@@ -6,7 +6,7 @@ A simple card game. Two people can play with two cell phone.
 
 ## 요구 사항
 
-- [x] 상대방과 서버로 연결하여 게임을 진행한다.
+- [x] 상대방과 서버로 연결하여 게임을 진행한다(Firebase Realtime Database 사용).
 
 - [x] 상대방의 동작시에 대기한다.
 
@@ -31,3 +31,5 @@ A simple card game. Two people can play with two cell phone.
 - RecyclerView [(포스트)](https://penguo.github.io/posts/Recyclerview-example)
 
 - Firebase - Realtime Database
+
+- (예정) Firebase - Authentication
